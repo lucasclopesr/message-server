@@ -33,31 +33,34 @@ int main(int argc, char **argv){
   addrtostr(addr, addrstr, BUFSIZE);
   printf("connected to %s\n", addrstr);
 
+  //------------- send data correctly
+  
   // Send data to server
   char buf[BUFSIZE];
-  memset(buf, 0, BUFSIZE);
-  printf("message> ");
-  fgets(buf, BUFSIZE-1, stdin);
-  int count = send(s, buf, strlen(buf), 0);
 
-  if (count != strlen(buf)) {
-    logexit("send");
-  }
+  while (1) {
+    memset(buf, 0, BUFSIZE);
+    printf("message> ");
+    fgets(buf, BUFSIZE-1, stdin);
+    int count = send(s, buf, strlen(buf), 0);
 
-  // Waits for server answer
-  memset(buf, 0, BUFSIZE);
-  unsigned total = 0;
-  while(1) {
-    count = recv(s, buf + total, BUFSIZE - total, 0);
+    if (count != strlen(buf)) {
+      logexit("send");
+    }
+
+    // Waits for server answer
+    memset(buf, 0, BUFSIZE);
+    count = recv(s, buf, BUFSIZE, 0);
     if (count == 0)
       break;
-    total += count;
+
+    printf("received %u bytes\n", count);
+    puts(buf);
   }
 
+  //------------- until connection is closed
   close(s);
 
-  printf("received %u bytes\n", total);
-  puts(buf);
 
   exit(EXIT_SUCCESS);
 

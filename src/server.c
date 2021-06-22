@@ -7,6 +7,17 @@ void usage(int argc, char **argv) {
   exit(EXIT_FAILURE);
 }
 
+void stripInvalid(char *s, int len){
+    int i;
+
+  for (i = 0; i < len; i++) {
+    if (s[i] == '\n') {
+      s[i] = '\0';
+      break;
+    }
+  }
+}
+
 int main(int argc, char **argv){
   if (argc < 3)
     usage(argc, argv);
@@ -38,11 +49,11 @@ int main(int argc, char **argv){
   addrtostr(addr, addrstr, BUFSIZE);
   printf("bound to %s, waiting connections\n", addrstr);
 
-  while (1) {
-    struct sockaddr_storage cstorage;
-    struct sockaddr *caddr = (struct sockaddr *)(&cstorage);
-    socklen_t caddr_size = sizeof(storage);
+  struct sockaddr_storage cstorage;
+  struct sockaddr *caddr = (struct sockaddr *)(&cstorage);
+  socklen_t caddr_size = sizeof(storage);
 
+  while (1) {
     int csock = accept(s, caddr, &caddr_size);
     if (csock == -1)
       logexit("accept");
@@ -53,22 +64,30 @@ int main(int argc, char **argv){
 
     char buf[BUFSIZE];
     memset(buf, 0, BUFSIZE);
-    size_t count = recv(csock, buf, BUFSIZE, 0);
-    printf("[msg] %s, %d bytes: %s\n", caddrstr, (int) count, buf);
 
-    // TODO: implement client received message until character 
-    /*unsigned total = 0;
-    while(1) {
-      count = recv(s, buf + total, BUFSIZE - total, 0);
-      if (count == 0)
+    while (1) {
+      // printf("[log] strcmp: %d", strcmp(buf, "EOF"));
+      memset(buf, 0, BUFSIZE);
+      size_t count = recv(csock, buf, BUFSIZE, 0);
+      printf("[log] count: %d", count);
+
+      buf[strcspn(buf, "\n")] = 0;
+      printf("[msg] %s, %d bytes: %s\n", caddrstr, strlen(buf), buf);
+
+      // Remove all invalid characters
+      if (0 == strcmp(buf, "EOF")) {
         break;
-      total += count;
-    }*/
+      }
 
-    sprintf(buf, "remote endpoint: %s\n", caddrstr);
-    count = send(csock, buf, strlen(buf)+1, 0);
-    if (count != strlen(buf)+1) {
-      logexit("send");
+      // Check for message size
+      // Close client if message == EOF
+      
+
+      sprintf(buf, "remote endpoint: %s\n", caddrstr);
+      count = send(csock, buf, strlen(buf)+1, 0);
+      if (count != strlen(buf)+1) {
+        logexit("send");
+      }
     }
 
     close(csock);
