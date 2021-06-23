@@ -69,21 +69,76 @@ int main(int argc, char **argv){
       // printf("[log] strcmp: %d", strcmp(buf, "EOF"));
       memset(buf, 0, BUFSIZE);
       size_t count = recv(csock, buf, BUFSIZE, 0);
-      printf("[log] count: %d", count);
+      printf("[log] %d bytes\n", (int) count);
 
       buf[strcspn(buf, "\n")] = 0;
-      printf("[msg] %s, %d bytes: %s\n", caddrstr, strlen(buf), buf);
+      printf("[msg] %s, %d len: %s\n", caddrstr, (int) strlen(buf), buf);
 
       // Remove all invalid characters
       if (0 == strcmp(buf, "EOF")) {
         break;
       }
 
+      char* command = strtok(buf, " "); // Split message by spaces
+      if (0 == strcmp(command, "add")) {
+        // ADD X Y
+        char* char_x = strtok(NULL, " ");
+        int x = atoi(char_x);
+        char* char_y = strtok(NULL, " ");
+        int y = atoi(char_y);
+
+        printf("[log] x=%d y=%d\n", x, y);
+        int r = add(&locs, x, y);
+
+        if (r == ADDED) {
+          sprintf(buf, "%d %d added\n", x, y);
+        } else if (r == ALREADY_EXISTS) {
+          sprintf(buf, "%d %d already exists\n", x, y);
+        } else if (r == LIMIT_EXCEEDED){
+          sprintf(buf, "maximum number of localities reached");
+        }else {
+          sprintf(buf, "could not add %d %d\n", x, y);
+        }
+      } else if (0 == strcmp(command, "rm")) {
+        // REMOVE X Y
+        char* char_x = strtok(NULL, " ");
+        int x = atoi(char_x);
+        char* char_y = strtok(NULL, " ");
+        int y = atoi(char_y);
+
+        printf("[log] x=%d y=%d\n", x, y);
+        int r = remove_loc(&locs, x, y);
+
+        if (r == REMOVED) {
+          sprintf(buf, "%d %d removed\n", x, y);
+        } else if (r == DOES_NOT_EXIST) {
+          sprintf(buf, "%d %d does not exist\n", x, y);
+        } else {
+          sprintf(buf, "could not add %d %d\n", x, y);
+        }
+      } else if (0 == strcmp(command, "list")) {
+        // LIST
+        list(locs);
+      } else if (0 == strcmp(command, "query")) {
+        // QUERY X Y
+        char* char_x = strtok(NULL, " ");
+        int x = atoi(char_x);
+        char* char_y = strtok(NULL, " ");
+        int y = atoi(char_y);
+        Loc q = query(locs, x, y);
+
+        if (q.x != -1 && q.y != -1) {
+          sprintf(buf, "%d %d\n", q.x, q.y);
+        } else {
+          sprintf(buf, "Not found");
+        }
+
+      }
+
       // Check for message size
       // Close client if message == EOF
       
 
-      sprintf(buf, "remote endpoint: %s\n", caddrstr);
       count = send(csock, buf, strlen(buf)+1, 0);
       if (count != strlen(buf)+1) {
         logexit("send");

@@ -17,6 +17,12 @@
 #define GREAT_DISTANCE 1000000
 #define TRUE 1
 #define FALSE 0
+#define ADDED 2
+#define ALREADY_EXISTS 3
+#define REMOVED 4
+#define DOES_NOT_EXIST 5
+#define FOUND 6
+#define LIMIT_EXCEEDED 7
 
 typedef struct {
     int x;

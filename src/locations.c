@@ -68,14 +68,14 @@ int add(Locs *locs, int x, int y){
       printf("%d %d added\n", x, y);
     } else {
       printf("limit exceeded\n");
-      return FALSE;
+      return LIMIT_EXCEEDED;
     }
   } else {
     printf("%d %d already exists\n", x, y);
-    return FALSE;
+    return ALREADY_EXISTS;
   }
 
-  return TRUE;
+  return ADDED;
 }
 
 // Tries to remove a location from the list
@@ -92,10 +92,10 @@ int remove_loc(Locs *locs, int x, int y){
     printf("%d %d removed\n", x, y);
   } else {
     printf("%d %d does not exist\n", x, y);
-    return FALSE;
+    return DOES_NOT_EXIST;
   }
 
-  return TRUE;
+  return REMOVED;
 }
 
 void list(Locs locs){
