@@ -118,7 +118,9 @@ int main(int argc, char **argv){
         }
       } else if (0 == strcmp(command, "list")) {
         // LIST
-        list(locs);
+        const char* list_locations = list(locs);
+        printf("[log] list: %s\n", list_locations);
+        sprintf(buf, "%s", list_locations);
       } else if (0 == strcmp(command, "query")) {
         // QUERY X Y
         char* char_x = strtok(NULL, " ");

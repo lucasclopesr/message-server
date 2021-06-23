@@ -11,9 +11,12 @@
  */
 
 #include <stdio.h> 
+#include <stdlib.h> 
+#include <string.h> 
 #include <math.h> 
 
 #define MAX_LOCS 50
+#define MAX_LOCS_TO_STRING 1500
 #define GREAT_DISTANCE 1000000
 #define TRUE 1
 #define FALSE 0
@@ -52,7 +55,7 @@ int add(Locs *locs, int x, int y);
 // Returns FALSE in case something went wrong and TRUE otherwise.
 int remove_loc(Locs *locs, int x, int y);
 
-void list(Locs locs);
+const char* list(Locs locs);
 
 // Queries for nearest location
 int isEmpty(Locs locs);

@@ -98,14 +98,18 @@ int remove_loc(Locs *locs, int x, int y){
   return REMOVED;
 }
 
-void list(Locs locs){
+const char* list(Locs locs){
   int i;
+  char loc[10];
+  char *list = (char*)  malloc(MAX_LOCS_TO_STRING * sizeof(char));
   for (i = 0; i < MAX_LOCS; i++){
     if (locs.l[i].x != -1 && locs.l[i].y != -1){
-      printf("(%d, %d) ", locs.l[i].x, locs.l[i].y);
+      sprintf(loc, "%d %d ", locs.l[i].x, locs.l[i].y);
+      strcat(list, loc);
     }
   }
-  printf("\n");
+
+  return list;
 }
 
 int isEmpty(Locs locs){
