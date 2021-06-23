@@ -115,12 +115,12 @@ const char* list(Locs locs){
 int isEmpty(Locs locs){
   int i, c = 0;
   for (i = 0; i < MAX_LOCS; i++){
-    if (locs.l[i].x == -1 && locs.l[i].y == -1){
+    if (locs.l[i].x != -1 && locs.l[i].y != -1){
       c++;
     }
   }
 
-  if (c == MAX_LOCS -1)
+  if (c == 0)
     return TRUE;
 
   return FALSE;

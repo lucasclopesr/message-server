@@ -93,3 +93,22 @@ void addrtostr(const struct sockaddr *addr, char *str, size_t strsize) {
     snprintf(str, strsize, "IPv%d %s %hu", version, addrstr, port);
 }
 
+int invalidInput(const char * buf, int len) {
+  int i;
+
+  // printf("\n");
+  for (i = 0; i < len; i++) {
+    // printf("char[%d]: %c ", i, buf[i]);
+    if (buf[i] < 48 && buf[i] != 32) 
+      return FALSE;
+    if (buf[i] > 57 && buf[i] < 65) 
+      return FALSE;
+    if (buf[i] > 90 && buf[i] < 97) 
+      return FALSE;
+    if (buf[i] > 122) 
+      return FALSE;
+  }
+  // printf("\n");
+
+  return TRUE;
+}
