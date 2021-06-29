@@ -69,6 +69,9 @@ int main(int argc, char **argv){
 
     char buf[BUFSIZE];
     char response[BUFSIZE];
+    char *message;
+    char message_aux[BUFSIZE];
+    char *save_ptr1, *save_ptr2;
     memset(buf, 0, BUFSIZE);
     memset(response, 0, BUFSIZE);
     size_t count;
@@ -78,13 +81,12 @@ int main(int argc, char **argv){
       memset(buf, 0, BUFSIZE);
       unsigned total = 0;
       count = 0;
-      //count = recv(csock, buf + total, BUFSIZE - total, 0);
 
       while (1) {
         count = recv(csock, buf + total, BUFSIZE - total, 0);
-        printf("[log] received package!\n");
+        //printf("[log] received package! count: %d\n", (int)count);
         total += count;
-        printf("[log] Total: %d, count: %d, buf[%d]: %d\n", total, (int) count, total-1, buf[total-1]);
+        //printf("[log] Total: %d, count: %d, buf[%d]\n", total, (int) count, total-1);
         if (total > 0 && buf[total-1] == '\n'){
           printf("[log] \\n arrived!\n");
           break;
@@ -93,85 +95,94 @@ int main(int argc, char **argv){
 
       printf("[log] %d bytes\n", (int) total);
 
-      if (!invalidInput(buf, BUFSIZE)) {
-        buf[strcspn(buf, "\n")] = 0;
-        printf("[msg] %s, %d len: %s\n", caddrstr, (int) strlen(buf), buf);
+      printf("[log] buf: %s\n", buf);
+      message = strtok_r(buf, "\n", &save_ptr1);
+      while (message != NULL){
+        printf("[log] message: %s\n", message);
+        if (!invalidInput(message, BUFSIZE)) {
+          printf("[msg] %s, %d len: %s\n", caddrstr, (int) strlen(message), message);
 
-        if (0 == strcmp(buf, "kill")) {
-          close(csock);
-          exit(EXIT_SUCCESS);
+          if (0 == strcmp(message, "kill")) {
+            close(csock);
+            exit(EXIT_SUCCESS);
 
-          return 0;
-        }
-
-        char* command = strtok(buf, " "); // Split message by spaces
-        memset(response, 0, BUFSIZE);
-        printf("[log] %s command\n", command);
-        if (0 == strcmp(command, "add")) {
-          // ADD X Y
-          char* char_x = strtok(NULL, " ");
-          int x = atoi(char_x);
-          char* char_y = strtok(NULL, " ");
-          int y = atoi(char_y);
-
-          printf("[log] add x=%d y=%d\n", x, y);
-          int r = add(&locs, x, y);
-
-          if (r == ADDED) {
-            sprintf(response, "%d %d added\n", x, y);
-          } else if (r == ALREADY_EXISTS) {
-            sprintf(response, "%d %d already exists\n", x, y);
-          } else if (r == LIMIT_EXCEEDED){
-            sprintf(response, "limit exceeded\n");
-          }else {
-            sprintf(response, "could not add %d %d\n", x, y);
+            return 0;
           }
-        } else if (0 == strcmp(command, "rm")) {
-          // REMOVE X Y
-          char* char_x = strtok(NULL, " ");
-          int x = atoi(char_x);
-          char* char_y = strtok(NULL, " ");
-          int y = atoi(char_y);
 
-          printf("[log] x=%d y=%d\n", x, y);
-          int r = remove_loc(&locs, x, y);
+          strcpy(message_aux, message);
+          //printf("[log] message aux: %s\n", message_aux);
+          char* command = strtok_r(message_aux, " ", &save_ptr2); // Split message by spaces
+          printf("[log] command: %s \n", command);
+          memset(response, 0, BUFSIZE);
+          if (0 == strcmp(command, "add")) {
+            // ADD X Y
+            char* char_x = strtok_r(NULL, " ", &save_ptr2);
+            int x = atoi(char_x);
+            char* char_y = strtok_r(NULL, " ", &save_ptr2);
+            int y = atoi(char_y);
 
-          if (r == REMOVED) {
-            sprintf(response, "%d %d removed\n", x, y);
-          } else if (r == DOES_NOT_EXIST) {
-            sprintf(response, "%d %d does not exist\n", x, y);
+            printf("[log] add x=%d y=%d\n", x, y);
+            int r = add(&locs, x, y);
+
+            if (r == ADDED) {
+              sprintf(response, "%d %d added\n", x, y);
+            } else if (r == ALREADY_EXISTS) {
+              sprintf(response, "%d %d already exists\n", x, y);
+            } else if (r == LIMIT_EXCEEDED){
+              sprintf(response, "limit exceeded\n");
+            }else {
+              sprintf(response, "could not add %d %d\n", x, y);
+            }
+          } else if (0 == strcmp(command, "rm")) {
+            // REMOVE X Y
+            char* char_x = strtok_r(NULL, " ", &save_ptr2);
+            int x = atoi(char_x);
+            char* char_y = strtok_r(NULL, " ", &save_ptr2);
+            int y = atoi(char_y);
+
+            printf("[log] x=%d y=%d\n", x, y);
+            int r = remove_loc(&locs, x, y);
+
+            if (r == REMOVED) {
+              sprintf(response, "%d %d removed\n", x, y);
+            } else if (r == DOES_NOT_EXIST) {
+              sprintf(response, "%d %d does not exist\n", x, y);
+            } else {
+              sprintf(response, "could not add %d %d\n", x, y);
+            }
+          } else if (0 == strcmp(command, "list")) {
+            // LIST
+            const char* list_locations = list(locs);
+            printf("[log] list: %s\n", list_locations);
+            sprintf(response, "%s\n", list_locations);
+          } else if (0 == strcmp(command, "query")) {
+            // QUERY X Y
+            char* char_x = strtok_r(NULL, " ", &save_ptr2);
+            int x = atoi(char_x);
+            char* char_y = strtok_r(NULL, " ", &save_ptr2);
+            int y = atoi(char_y);
+            Loc q = query(locs, x, y);
+
+            if (q.x != -1 && q.y != -1) {
+              sprintf(response, "%d %d\n", q.x, q.y);
+            } else {
+              sprintf(response, "Not found\n");
+            }
+
           } else {
-            sprintf(response, "could not add %d %d\n", x, y);
-          }
-        } else if (0 == strcmp(command, "list")) {
-          // LIST
-          const char* list_locations = list(locs);
-          printf("[log] list: %s\n", list_locations);
-          sprintf(response, "%s\n", list_locations);
-        } else if (0 == strcmp(command, "query")) {
-          // QUERY X Y
-          char* char_x = strtok(NULL, " ");
-          int x = atoi(char_x);
-          char* char_y = strtok(NULL, " ");
-          int y = atoi(char_y);
-          Loc q = query(locs, x, y);
-
-          if (q.x != -1 && q.y != -1) {
-            sprintf(response, "%d %d\n", q.x, q.y);
-          } else {
-            sprintf(response, "Not found\n");
+            // Closes connection if the message format is incorrect
+            printf("[log] incorrect format\n");
+            close(csock);
+            break;
           }
 
-        } else {
-          // Closes connection if the message format is incorrect
-          close(csock);
-          break;
+          count = send(csock, response, strlen(response), 0);
+          if (count != strlen(response)) {
+            logexit("send");
+          }
         }
 
-        count = send(csock, response, strlen(response), 0);
-        if (count != strlen(response)) {
-          logexit("send");
-        }
+        message = strtok_r(NULL, "\n", &save_ptr1);
       }
     }
 
