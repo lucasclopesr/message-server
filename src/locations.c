@@ -55,7 +55,7 @@ int add(Locs *locs, int x, int y){
   l.y = y;
 
   if (x < 0 || y < 0) {
-    printf("bad input\n");
+    // //printf("bad input\n");
     return FALSE;
   }
 
@@ -65,13 +65,13 @@ int add(Locs *locs, int x, int y){
     int next = getNextFree(*locs);
     if (next >= 0) {
       locs->l[next] = l;
-      printf("%d %d added\n", x, y);
+      // //printf("%d %d added\n", x, y);
     } else {
-      printf("limit exceeded\n");
+      //printf("limit exceeded\n");
       return LIMIT_EXCEEDED;
     }
   } else {
-    printf("%d %d already exists\n", x, y);
+    //printf("%d %d already exists\n", x, y);
     return ALREADY_EXISTS;
   }
 
@@ -89,9 +89,9 @@ int remove_loc(Locs *locs, int x, int y){
 
   if (locExists >= 0){
     locs->l[locExists] = l;
-    printf("%d %d removed\n", x, y);
+    //printf("%d %d removed\n", x, y);
   } else {
-    printf("%d %d does not exist\n", x, y);
+    //printf("%d %d does not exist\n", x, y);
     return DOES_NOT_EXIST;
   }
 
@@ -104,7 +104,7 @@ const char* list(Locs locs){
   char *list = (char*)  malloc(MAX_LOCS_TO_STRING * sizeof(char));
   for (i = 0; i < MAX_LOCS; i++){
     if (locs.l[i].x != -1 && locs.l[i].y != -1){
-      sprintf(loc, "%d %d ", locs.l[i].x, locs.l[i].y);
+      //printf(loc, "%d %d ", locs.l[i].x, locs.l[i].y);
       strcat(list, loc);
     }
   }
@@ -157,9 +157,9 @@ Loc query(Locs locs, int x, int y){
   Loc nearest;
 
   nearest = get_nearest(locs, x, y);
-  if (nearest.x == -1 && nearest.y == -1)
-    printf("none\n");
+  //if (nearest.x == -1 && nearest.y == -1)
+    //printf("none\n");
 
-  printf("Nearest: (%d,%d)\n", nearest.x, nearest.y);
+  //printf("Nearest: (%d,%d)\n", nearest.x, nearest.y);
   return nearest;
 }

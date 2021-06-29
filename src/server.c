@@ -34,6 +34,11 @@ int main(int argc, char **argv){
   // Create connection socket
   int s;
   s = socket(storage.ss_family, SOCK_STREAM, 0);
+  int enable = 1;
+  if (0 != setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int))) {
+      logexit("setsockopt");
+  }
+
   if ( s == -1 )
     logexit("socket");
 
@@ -63,7 +68,9 @@ int main(int argc, char **argv){
     printf("[log] connection from %s\n", caddrstr);
 
     char buf[BUFSIZE];
+    char response[BUFSIZE];
     memset(buf, 0, BUFSIZE);
+    memset(response, 0, BUFSIZE);
 
     while (1) {
       // printf("[log] strcmp: %d", strcmp(buf, "EOF"));
@@ -78,9 +85,12 @@ int main(int argc, char **argv){
         if (0 == strcmp(buf, "kill")) {
           close(csock);
           exit(EXIT_SUCCESS);
+
+          return 0;
         }
 
         char* command = strtok(buf, " "); // Split message by spaces
+        memset(response, 0, BUFSIZE);
         if (0 == strcmp(command, "add")) {
           // ADD X Y
           char* char_x = strtok(NULL, " ");
@@ -92,13 +102,13 @@ int main(int argc, char **argv){
           int r = add(&locs, x, y);
 
           if (r == ADDED) {
-            sprintf(buf, "%d %d added\n", x, y);
+            sprintf(response, "%d %d added\n", x, y);
           } else if (r == ALREADY_EXISTS) {
-            sprintf(buf, "%d %d already exists\n", x, y);
+            sprintf(response, "%d %d already exists\n", x, y);
           } else if (r == LIMIT_EXCEEDED){
-            sprintf(buf, "maximum number of localities reached");
+            sprintf(response, "limit exceeded\n");
           }else {
-            sprintf(buf, "could not add %d %d\n", x, y);
+            sprintf(response, "could not add %d %d\n", x, y);
           }
         } else if (0 == strcmp(command, "rm")) {
           // REMOVE X Y
@@ -111,17 +121,17 @@ int main(int argc, char **argv){
           int r = remove_loc(&locs, x, y);
 
           if (r == REMOVED) {
-            sprintf(buf, "%d %d removed\n", x, y);
+            sprintf(response, "%d %d removed\n", x, y);
           } else if (r == DOES_NOT_EXIST) {
-            sprintf(buf, "%d %d does not exist\n", x, y);
+            sprintf(response, "%d %d does not exist\n", x, y);
           } else {
-            sprintf(buf, "could not add %d %d\n", x, y);
+            sprintf(response, "could not add %d %d\n", x, y);
           }
         } else if (0 == strcmp(command, "list")) {
           // LIST
           const char* list_locations = list(locs);
           printf("[log] list: %s\n", list_locations);
-          sprintf(buf, "%s", list_locations);
+          sprintf(response, "%s\n", list_locations);
         } else if (0 == strcmp(command, "query")) {
           // QUERY X Y
           char* char_x = strtok(NULL, " ");
@@ -131,9 +141,9 @@ int main(int argc, char **argv){
           Loc q = query(locs, x, y);
 
           if (q.x != -1 && q.y != -1) {
-            sprintf(buf, "%d %d\n", q.x, q.y);
+            sprintf(response, "%d %d\n", q.x, q.y);
           } else {
-            sprintf(buf, "Not found");
+            sprintf(response, "Not found\n");
           }
 
         } else {
@@ -142,8 +152,8 @@ int main(int argc, char **argv){
           break;
         }
 
-        count = send(csock, buf, strlen(buf)+1, 0);
-        if (count != strlen(buf)+1) {
+        count = send(csock, response, strlen(response), 0);
+        if (count != strlen(response)) {
           logexit("send");
         }
       }
