@@ -102,14 +102,25 @@ const char* list(Locs locs){
   int i;
   char loc[10];
   char *list = (char*)  malloc(MAX_LOCS_TO_STRING * sizeof(char));
+  char *final_list = (char*)  malloc(MAX_LOCS_TO_STRING * sizeof(char) - 1);
+
+  if (isEmpty(locs))
+    list = "none";
+
   for (i = 0; i < MAX_LOCS; i++){
     if (locs.l[i].x != -1 && locs.l[i].y != -1){
-      //printf(loc, "%d %d ", locs.l[i].x, locs.l[i].y);
+      sprintf(loc, "%d %d ", locs.l[i].x, locs.l[i].y);
       strcat(list, loc);
     }
   }
 
-  return list;
+  if (isEmpty(locs)) {
+    final_list = "none";
+  } else {
+    strncpy(final_list, list, strlen(list) -1);
+  }
+
+  return final_list;
 }
 
 int isEmpty(Locs locs){

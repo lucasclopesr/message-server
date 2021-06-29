@@ -16,7 +16,7 @@
 #include <math.h> 
 
 #define MAX_LOCS 50
-#define MAX_LOCS_TO_STRING 1500
+#define MAX_LOCS_TO_STRING 10000
 #define GREAT_DISTANCE 1000000
 #define TRUE 1
 #define FALSE 0

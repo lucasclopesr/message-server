@@ -71,12 +71,27 @@ int main(int argc, char **argv){
     char response[BUFSIZE];
     memset(buf, 0, BUFSIZE);
     memset(response, 0, BUFSIZE);
+    size_t count;
 
     while (1) {
-      // printf("[log] strcmp: %d", strcmp(buf, "EOF"));
+      printf("\n[log] Next command\n");
       memset(buf, 0, BUFSIZE);
-      size_t count = recv(csock, buf, BUFSIZE, 0);
-      printf("[log] %d bytes\n", (int) count);
+      unsigned total = 0;
+      count = 0;
+      //count = recv(csock, buf + total, BUFSIZE - total, 0);
+
+      while (1) {
+        count = recv(csock, buf + total, BUFSIZE - total, 0);
+        printf("[log] received package!\n");
+        total += count;
+        printf("[log] Total: %d, count: %d, buf[%d]: %d\n", total, (int) count, total-1, buf[total-1]);
+        if (total > 0 && buf[total-1] == '\n'){
+          printf("[log] \\n arrived!\n");
+          break;
+        }
+      }
+
+      printf("[log] %d bytes\n", (int) total);
 
       if (!invalidInput(buf, BUFSIZE)) {
         buf[strcspn(buf, "\n")] = 0;
@@ -91,6 +106,7 @@ int main(int argc, char **argv){
 
         char* command = strtok(buf, " "); // Split message by spaces
         memset(response, 0, BUFSIZE);
+        printf("[log] %s command\n", command);
         if (0 == strcmp(command, "add")) {
           // ADD X Y
           char* char_x = strtok(NULL, " ");
@@ -98,7 +114,7 @@ int main(int argc, char **argv){
           char* char_y = strtok(NULL, " ");
           int y = atoi(char_y);
 
-          printf("[log] x=%d y=%d\n", x, y);
+          printf("[log] add x=%d y=%d\n", x, y);
           int r = add(&locs, x, y);
 
           if (r == ADDED) {
