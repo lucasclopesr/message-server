@@ -29,7 +29,7 @@
 
 typedef struct {
     int x;
-      int y;
+    int y;
 } Loc;
 
 typedef struct {
